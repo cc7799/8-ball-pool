@@ -27,7 +27,7 @@ class GameLoop:
         self.pygame_event_sets = {"action": [pygame.QUIT, pygame.MOUSEBUTTONDOWN,
                                              pygame.MOUSEBUTTONUP],
                                   "no_action": [pygame.QUIT],
-                                  "debug": [pygame.QUIT] + c.DIGIT_EVENTS}
+                                  "debug": [pygame.QUIT] + c.DEBUG_EVENTS}
 
     def initialize_display(self) -> None:
         """
@@ -369,7 +369,7 @@ class GameLoop:
                 if c.DEBUGGING:
                     balls_in_pocket: List[PoolBall] = []
                     if event.type == pygame.KEYDOWN:
-                        for key_num, digit_event_key in enumerate(c.DIGIT_EVENTS):
+                        for key_num, digit_event_key in enumerate(c.DEBUG_EVENTS):
                             if event.key == digit_event_key:
                                 key_num += 1
                                 debug_ball = self.pool_balls.get(key_num)
