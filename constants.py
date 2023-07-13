@@ -157,7 +157,7 @@ MAX_ROTATION_OFFSET = MIN_ROTATION_OFFSET + 100
 MAX_CUE_BALL_VELO = 5  # The speed the cue ball should go at if hit at max draw distance
 
 # Text Constants #
-PLAYER_TEXT_FONT_FILENAME = "fonts/Arcade.ttf"
+PLAYER_TEXT_FONT_FILENAME = "fonts/unlearn2.ttf"
 PLAYER_TEXT_FONT_SIZE = 100
 PLAYER_TEXT_COLOR = colors["blue"]
 WINNER_TEXT_FONT_FILENAME = "fonts/abduction2002.ttf"

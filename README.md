@@ -135,4 +135,4 @@ The complete authorship information can be found below
 
 
 ## Fonts Used
-The font files used in this project are `abduction2002` and `Arcade` from `1001freefonts.com`.
+The font files used in this project are `abduction2002` and `unlearned` from `1001freefonts.com`.
