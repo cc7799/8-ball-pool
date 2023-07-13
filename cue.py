@@ -58,6 +58,20 @@ class Cue(pygame.sprite.Sprite):
             if c.DEBUGGING:
                 self.debug_center_rect.center = self.rect.center
 
+    def set_rotation_point(self, point) -> None:
+        """
+        Sets the rotation point for the cue stick
+        :param point: The point to set to
+        """
+        self.rotation_point = point
+
+    def set_position(self, position: Point):
+        self.rect.x = position.x
+        self.rect.y = position.y
+
+    def set_rect_center(self, position: Point):
+        self.rect.center = position.to_tuple()
+
     def angle_to_point(self, angle: float) -> Point:
         """
         Determines the coordinate point from the point of rotation at a given angle and a set distance
@@ -144,18 +158,39 @@ class Cue(pygame.sprite.Sprite):
         elif quadrant == 4:
             return quadrant_angle + 270
 
-    def set_cue_power(self, cursor_pos: Point) -> None:
+    def set_cue_power(self, cursor_pos: Point) -> bool:
         """
         Draws the cue back based on the position of the cursor
         Only sets power between the min and max offset defined in `constants.py`
         :param cursor_pos: The position of the cursor
+        :return: True if the cue was set; False otherwise
         """
-        if self.check_valid_power_mouse_pos(cursor_pos):
+        def check_valid_power_mouse_pos(mouse_pos: Point) -> bool:
+            """
+            Determines whether a given mouse_pos is valid to pull back the cue
+                by checking that the cue and mouse are not more than 45 degrees apart.
+                Used to prevent mouse on opposite side of cue from moving it
+            :param mouse_pos: The current position of the mouse cursor
+            :return: True if the cursor is within 45 degrees of the cue stick; False otherwise
+            """
+            cue_angle = self.angle
+            mouse_angle = self.point_to_angle(mouse_pos)
+
+            angle_difference = math.fabs((cue_angle - mouse_angle))
+
+            # Will return true for any angle at ±45 degrees
+            if 0 <= angle_difference <= 45 or 315 <= angle_difference < 360:
+                return True
+            else:
+                return False
+
+        if check_valid_power_mouse_pos(cursor_pos):
 
             drag_distance = util.distance_formula(Point(self.rotation_point.x, self.rotation_point.y),
                                                   Point(cursor_pos.x, cursor_pos.y))
 
-            drag_offset = 90
+            # Causes the position that the cue is dragged at to be 1/4 from the front rather than at the middle
+            drag_offset = c.CUE_HEIGHT / 4
             min_drag_distance = c.MIN_ROTATION_OFFSET - drag_offset
             max_drag_distance = c.MAX_ROTATION_OFFSET - drag_offset
 
@@ -170,6 +205,10 @@ class Cue(pygame.sprite.Sprite):
 
             if c.DEBUGGING:
                 self.debug_center_rect.center = self.rect.center
+
+            return True
+        else:
+            return False
 
     def set_cue_power_to_offset(self, rotation_offset: float) -> None:
         """
@@ -196,25 +235,6 @@ class Cue(pygame.sprite.Sprite):
         self.rotation_offset = c.MIN_ROTATION_OFFSET
         self.rotation_locked = False
 
-    def check_valid_power_mouse_pos(self, mouse_pos: Point) -> bool:
-        """
-        Determines whether a given mouse_pos is valid to pull back the cue
-            by checking that the cue and mouse are not more than 45 degrees apart.
-            Used to prevent mouse on opposite side of cue from moving it
-        :param mouse_pos: The current position of the mouse cursor
-        :return: True if the cursor is within 45 degrees of the cue stick; False otherwise
-        """
-        cue_angle = self.angle
-        mouse_angle = self.point_to_angle(mouse_pos)
-
-        angle_difference = math.fabs((cue_angle - mouse_angle))
-
-        # Will return true for any angle at ±45 degrees
-        if 0 <= angle_difference <= 45 or 315 <= angle_difference < 360:
-            return True
-        else:
-            return False
-
     def determine_cue_ball_velocity(self) -> Tuple[float, float]:
         """
         Determines the velocity that the cue ball should move at after being hit by the cue stick
@@ -222,67 +242,52 @@ class Cue(pygame.sprite.Sprite):
         :return: A tuple containing the x and y components of the velocity
         """
 
-        angle = self.angle % 360  # Sends ball opposite to the angle the cue stick was pulled back at
+        def split_velocity(velo_magnitude: float, velo_angle: float) -> Tuple[float, float]:
+            """
+            Splits a velocity vector into its directional x and y components
+            :param velo_magnitude: The magnitude of the velocity vector
+            :param velo_angle: The angle of the velocity vector
+            :return: A tuple containing the directional x and y velocity
+            """
+            x_direction = y_direction = 0
+            x_magnitude = y_magnitude = -1
+
+            velo_angle = velo_angle % 360
+
+            quadrant_angle = math.radians(velo_angle % 90)  # relative angle in a single quadrant from [0, 90)
+
+            # Get component magnitude
+            if 0 <= velo_angle < 90 or 180 <= velo_angle < 270:
+                x_magnitude = velo_magnitude * math.sin(quadrant_angle)
+                y_magnitude = velo_magnitude * math.cos(quadrant_angle)
+            elif 90 <= velo_angle < 180 or 270 <= velo_angle < 360:
+                x_magnitude = velo_magnitude * math.cos(quadrant_angle)
+                y_magnitude = velo_magnitude * math.sin(quadrant_angle)
+
+            # Get component sign
+            if 0 <= velo_angle < 90:
+                x_direction = -1
+                y_direction = -1
+            elif 90 <= velo_angle < 180:
+                x_direction = -1
+                y_direction = 1
+            elif 180 <= velo_angle < 270:
+                x_direction = 1
+                y_direction = 1
+            elif 270 <= velo_angle < 360:
+                x_direction = 1
+                y_direction = -1
+
+            x_velo = x_direction * x_magnitude
+            y_velo = y_direction * y_magnitude
+
+            return x_velo, y_velo
+
+        angle = self.angle % 360
 
         velocity = util.map_to_range(self.rotation_offset,
                                      (c.MIN_ROTATION_OFFSET, c.MAX_ROTATION_OFFSET), (0, c.MAX_CUE_BALL_VELO))
 
-        velocity_x, velocity_y = self.split_velocity(velocity, angle)
+        velocity_x, velocity_y = split_velocity(velocity, angle)
 
         return velocity_x, velocity_y
-
-    @staticmethod
-    def split_velocity(velo_magnitude: float, velo_angle: float) -> Tuple[float, float]:
-        """
-        Splits a velocity vector into its directional x and y components
-        :param velo_magnitude: The magnitude of the velocity vector
-        :param velo_angle: The angle of the velocity vector
-        :return: A tuple containing the directional x and y velocity
-        """
-        x_direction = y_direction = 0
-        x_magnitude = y_magnitude = -1
-
-        velo_angle = velo_angle % 360
-
-        quadrant_angle = math.radians(velo_angle % 90)  # relative angle in a single quadrant from [0, 90)
-
-        # Get component magnitude
-        if 0 <= velo_angle < 90 or 180 <= velo_angle < 270:
-            x_magnitude = velo_magnitude * math.sin(quadrant_angle)
-            y_magnitude = velo_magnitude * math.cos(quadrant_angle)
-        elif 90 <= velo_angle < 180 or 270 <= velo_angle < 360:
-            x_magnitude = velo_magnitude * math.cos(quadrant_angle)
-            y_magnitude = velo_magnitude * math.sin(quadrant_angle)
-
-        # Get component sign
-        if 0 <= velo_angle < 90:
-            x_direction = -1
-            y_direction = -1
-        elif 90 <= velo_angle < 180:
-            x_direction = -1
-            y_direction = 1
-        elif 180 <= velo_angle < 270:
-            x_direction = 1
-            y_direction = 1
-        elif 270 <= velo_angle < 360:
-            x_direction = 1
-            y_direction = -1
-
-        x_velo = x_direction * x_magnitude
-        y_velo = y_direction * y_magnitude
-
-        return x_velo, y_velo
-
-    def set_rotation_point(self, point) -> None:
-        """
-        Sets the rotation point for the cue stick
-        :param point: The point to set to
-        """
-        self.rotation_point = point
-
-    def set_position(self, position: Point):
-        self.rect.x = position.x
-        self.rect.y = position.y
-
-    def set_rect_center(self, position: Point):
-        self.rect.center = position.to_tuple()
