@@ -70,7 +70,7 @@ Some unittesting is also included, but it is not currently comprehensive.
 
 ## Authorship
 This was created as a group project and as such, not all the code was written by me. 
-However, after the class was over, I refactored much of the original code.
+However, after the class was over, I refactored much of the original code, including completely rewriting `main.py`.
 The complete authorship information can be found below
 
 <table>
@@ -88,11 +88,11 @@ The complete authorship information can be found below
 </tr>
 <tr>
     <td>main.py</td>
-    <td></td>
+    <td>Connor</td>
 </tr>
 <tr>
     <td>pool_ball.py</td>
-    <td></td>
+    <td>Other group members</td>
 </tr>
 <tr>
     <td>pool_ball_list.py</td>
@@ -100,7 +100,7 @@ The complete authorship information can be found below
 </tr>
 <tr>
     <td>pool_table.py</td>
-    <td></td>
+    <td>Other group members</td>
 </tr>
 <tr>
     <td>unit_testing.py</td>
@@ -109,10 +109,6 @@ The complete authorship information can be found below
 <tr>
     <td>utilities.py</td>
     <td>Connor</td>
-</tr>
-<tr>
-    <td></td>
-    <td></td>
 </tr>
 </table>
 
