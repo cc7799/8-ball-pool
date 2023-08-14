@@ -100,10 +100,10 @@ colors: Dict[str, Tuple[int, int, int]] = {
 DEBUGGING = True
 MAX_FRAMERATE = 60
 
-DIGIT_EVENTS: List[pygame.event] = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4,
-                                    pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8,
-                                    pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t,
-                                    pygame.K_y, pygame.K_u]
+DEBUG_EVENTS: List[int] = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4,
+                                          pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8,
+                                          pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t,
+                                          pygame.K_y, pygame.K_u]
 
 # Physics Constants #
 FRICTION = 1 / 128
@@ -157,7 +157,7 @@ MAX_ROTATION_OFFSET = MIN_ROTATION_OFFSET + 100
 MAX_CUE_BALL_VELO = 5  # The speed the cue ball should go at if hit at max draw distance
 
 # Text Constants #
-PLAYER_TEXT_FONT_FILENAME = "fonts/Arcade.ttf"
+PLAYER_TEXT_FONT_FILENAME = "fonts/unlearn2.ttf"
 PLAYER_TEXT_FONT_SIZE = 100
 PLAYER_TEXT_COLOR = colors["blue"]
 WINNER_TEXT_FONT_FILENAME = "fonts/abduction2002.ttf"
